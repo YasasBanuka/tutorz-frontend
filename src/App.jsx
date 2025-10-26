@@ -1,15 +1,11 @@
-import { useState } from 'react'
-import './index.css'
+import React from 'react';
+import AppRoutes from './routes/AppRoutes';
 
 function App() {
-
   return (
-    <>
-      <h1 className="text-3xl font-bold underline text-amber-200">
-        Hello world!
-      </h1>
-    </>
-  )
+    <div>
+      <AppRoutes />
+    </div>
+  );
 }
-
-export default App
+export default App;
