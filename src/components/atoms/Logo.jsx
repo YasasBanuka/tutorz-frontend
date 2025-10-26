@@ -8,7 +8,7 @@ const Logo = () => (
             <img 
                 src={logoIcon} 
                 alt="Tutorz logo" 
-                className="h-7 w-7 mr-2" 
+                className="h-9 w-9 mr-2" 
             />
             Tutorz
         </h1>

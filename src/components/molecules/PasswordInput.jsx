@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Icon from '../atoms/Icon';
-import Label from '../atoms/Label'; // Using atoms
-import Input from '../atoms/Input'; // Using atoms
+import Label from '../atoms/Label'; 
+import Input from '../atoms/Input'; 
 import ErrorMessage from '../atoms/ErrorMessage';
 
 const PasswordInput = ({ id, label, placeholder, error }) => {

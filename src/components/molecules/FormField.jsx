@@ -3,8 +3,6 @@ import Label from '../atoms/Label';
 import Input from '../atoms/Input'; 
 import ErrorMessage from '../atoms/ErrorMessage';
 
-// We will assume your Atom/Input.jsx and Atom/Label.jsx
-// pass through standard props like className, htmlFor, etc.
 
 const FormField = ({ id, label, type = 'text', placeholder, error }) => (
     <div>

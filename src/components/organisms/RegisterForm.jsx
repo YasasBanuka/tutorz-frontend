@@ -32,7 +32,7 @@ const RegisterForm = ({ onSwitchToLogin }) => (
                     <option>Student/Parent</option>
                     <option>Tutor</option>
                     <option>Institute</option>
-          _       </Select>
+                </Select>
             </div>
             <button
                 type="submit"

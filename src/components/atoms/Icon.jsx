@@ -2,8 +2,8 @@ import React from 'react';
 
 import googleSrc from '../../assets/Images/google-icon-logo-svgrepo-com.svg';
 import appleSrc from '../../assets/Images/apple-black-logo-svgrepo-com.svg';
-import eyeClosed from '../../assets/Images/eye-svgrepo-com.svg';
-import eyeOpen from '../../assets/Images/eye-closed-svgrepo-com.svg'; 
+import eyeOpen from '../../assets/Images/eye-svgrepo-com.svg';
+import eyeClosed from '../../assets/Images/eye-closed-svgrepo-com.svg'; 
 
 const Icon = ({ provider, className }) => {
   const icons = {

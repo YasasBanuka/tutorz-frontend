@@ -23,7 +23,7 @@ const LoginForm = ({ onSwitchToRegister }) => (
             </div>
             <button
               type="submit"
-                className="w-full bg-blue-600 ... "
+                className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
             >
                 Log In
             </button>
