@@ -22,7 +22,7 @@ const LoginForm = ({ onSwitchToRegister }) => (
                 {/* ... (forgot password link) ... */}
             </div>
             <button
-              tSype="submit"
+              type="submit"
                 className="w-full bg-blue-600 ... "
             >
                 Log In

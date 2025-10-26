@@ -2,8 +2,8 @@ import React from 'react';
 import SocialLoginButton from '../molecules/SocialLogin/SocialLoginButton';
 import FormField from '../molecules/FormField';
 import PasswordInput from '../molecules/PasswordInput';
-import Label from '../atoms/Label'; // Using atom
-import Select from '../atoms/Select'; // Using atom
+import Label from '../atoms/Label'; 
+import Select from '../atoms/Select';
 
 const RegisterForm = ({ onSwitchToLogin }) => (
      <div className="w-full">
