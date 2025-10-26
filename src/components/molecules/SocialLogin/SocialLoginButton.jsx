@@ -3,8 +3,8 @@ import Icon from '../../atoms/Icon'; // We import the atom
 
 const SocialLoginButton = ({ provider, children }) => {
     const providerStyles = {
-        google: 'border-gray-300 hover:bg-gray-50',
-        apple: 'bg-black text-white hover:bg-gray-800',
+        google: 'border-gray-300 hover:bg-gray-150',
+        apple: 'border-gray-300 hover:bg-gray-150',
     };
 
     return (
