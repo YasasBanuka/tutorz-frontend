@@ -9,7 +9,7 @@ import FormField from '../molecules/FormField.jsx'; // From molecules
 import PasswordInput from '../molecules/PasswordInput.jsx'; // From molecules
 import Label from '../atoms/Label.jsx'; // From atoms
 import Select from '../atoms/Select.jsx'; // From atoms
-import { apiClient } from '../../services/api/apiClient.js'; // From services/api
+import apiClient from '../../services/api/apiClient';
 
 const LoginForm = ({ onSwitchToRegister }) => {
     const dispatch = useDispatch();
@@ -43,25 +43,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
     return (
         <div className="w-full">
-            <h1 className="text-2xl font-semibold text-gray-900 text-center">Log in to your account</h1>
-
-            {/* Role Selector */}
-            <div className="my-4">
-                 <Label htmlFor="role-login" className="block text-sm font-medium text-gray-700 mb-1">
-                     I am a...
-                 </Label>
-                 <Select
-                     id="role-login"
-                     name="role-login"
-                     value={selectedRole}
-                     onChange={(e) => setSelectedRole(e.target.value)}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
-                 >
-                     <option value="Student">Student/Parent</option>
-                     <option value="Tutor">Tutor</option>
-                     <option value="Institute">Institute</option>
-                 </Select>
-             </div>
+            <h1 className="text-2xl font-semibold text-gray-900 text-center">Log in to your account</h1>   
 
             {/* Social Login Buttons */}
             <div className="mt-6 space-y-4">

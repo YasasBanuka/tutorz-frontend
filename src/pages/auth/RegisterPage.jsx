@@ -6,9 +6,8 @@ import RegisterForm from '../../components/organisms/RegisterForm';
 export default function RegisterPage() {
     const navigate = useNavigate();
 
-    // This function will be passed to the RegisterForm
     const handleSwitchToLogin = () => {
-        navigate('/login'); // Tell the router to go to the login page
+        navigate('/login'); 
     };
 
     return (
