@@ -27,6 +27,10 @@ const RegisterDetailsPage = () => {
     const [bio, setBio] = useState('');
     const [bankAccount, setBankAccount] = useState('');
     const [bankName, setBankName] = useState('');
+    const [school, setSchool] = useState('');
+    const [grade, setGrade] = useState('');
+    const [parentName, setParentName] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     
     const [error, setError] = useState(null);
 
@@ -44,6 +48,10 @@ const RegisterDetailsPage = () => {
             bio,
             bankAccountNumber: bankAccount,
             bankName,
+            school,
+            grade,
+            parentName,
+            dateOfBirth
             // You can add more fields here
         };
 
@@ -86,9 +94,12 @@ const RegisterDetailsPage = () => {
             case 'Student':
                 return (
                     <>
-                        {/* Example: Add fields for Student */}
-                        <FormField id="firstName" label="Full Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-                        {/* <FormField id="school" label="School Name" value={school} onChange={(e) => setSchool(e.target.value)} /> */}
+                        <FormField id="firstName" label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                        <FormField id="lastName" label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                        <FormField id="school" label="School Name" value={school} onChange={(e) => setSchool(e.target.value)} required />
+                        <FormField id="grade" label="Grade" value={grade} onChange={(e) => setGrade(e.target.value)} required />
+                        <FormField id="parentName" label="Parent/Guardian Name" value={parentName} onChange={(e) => setParentName(e.target.value)} required />
+                        <FormField id="dateOfBirth" label="Date of Birth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required />
                     </>
                 );
             case 'Institute':
