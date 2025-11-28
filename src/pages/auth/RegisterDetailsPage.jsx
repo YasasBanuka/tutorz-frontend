@@ -30,7 +30,7 @@ const RegisterDetailsPage = () => {
     school: '',
     grade: '',
     parentName: '',
-    dateOfBirth: '',
+    dateOfBirth: '', // This starts as an empty string
   });
 
   const [errors, setErrors] = useState({});
@@ -66,12 +66,20 @@ const RegisterDetailsPage = () => {
         return;
     }
 
+    // Convert empty string to null before sending to backend
+    const cleanDateOfBirth = formData.dateOfBirth === '' ? null : formData.dateOfBirth;
+
     // Prepare Data
     const fullRegistrationData = {
       ...stepOneData,
       ...formData, 
+      // Map frontend fields to backend DTO names
       schoolName: formData.school,
       bankAccountNumber: formData.bankAccount,
+      
+      // Use the cleaned date variable
+      dateOfBirth: cleanDateOfBirth,
+      
       ExperienceYears: 0
     };
 
@@ -79,7 +87,7 @@ const RegisterDetailsPage = () => {
     const result = await register(fullRegistrationData);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard'); // Or wherever you want to go after success
     } else {
       // Use helper to extract message
       setGlobalError(extractErrorMessage(result.error));
@@ -88,7 +96,7 @@ const RegisterDetailsPage = () => {
 
   const renderRoleFields = () => {
     switch (stepOneData.role) {
-      case ROLES.TUTOR: // Using Constant
+      case ROLES.TUTOR:
         return (
           <>
             <FormField id="firstName" label="First Name" value={formData.firstName} onChange={handleChange} required />
@@ -98,7 +106,7 @@ const RegisterDetailsPage = () => {
             <FormField id="bankName" label="Bank Name" value={formData.bankName} onChange={handleChange} />
           </>
         );
-      case ROLES.STUDENT: // Using Constant
+      case ROLES.STUDENT:
         return (
           <>
             <FormField id="firstName" label="First Name" value={formData.firstName} onChange={handleChange} required />

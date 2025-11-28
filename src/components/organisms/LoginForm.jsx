@@ -1,44 +1,72 @@
-import React from 'react';
+import React, { useState } from 'react';
 // External Packages
 import { GoogleLogin } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
 // Local Project Files (Relative Paths)
-import { loginSuccess } from '../../store/authSlice.js'; // From store
-import SocialLoginButton from '../molecules/SocialLogin/SocialLoginButton.jsx'; // From molecules/SocialLogin
-import FormField from '../molecules/FormField.jsx'; // From molecules
-import PasswordInput from '../molecules/PasswordInput.jsx'; // From molecules
-import Label from '../atoms/Label.jsx'; // From atoms
-import Select from '../atoms/Select.jsx'; // From atoms
+import { loginSuccess } from '../../store/authSlice.js'; 
+import { login } from '../../services/auth/authService.js'; 
+import SocialLoginButton from '../molecules/SocialLogin/SocialLoginButton.jsx'; 
+import FormField from '../molecules/FormField.jsx'; 
+import PasswordInput from '../molecules/PasswordInput.jsx'; 
 import apiClient from '../../services/api/apiClient';
 
 const LoginForm = ({ onSwitchToRegister }) => {
     const dispatch = useDispatch();
-    const [selectedRole, setSelectedRole] = React.useState('Student'); // Default to Student
+    
+    // State Management
+    const [selectedRole, setSelectedRole] = useState('Student'); 
+    const [identifier, setIdentifier] = useState(''); // Stores Email OR Phone
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false); // UI loading state
 
+    // --- MANUAL LOGIN HANDLER (Email/Phone) ---
+    const handleManualLogin = async (e) => {
+        e.preventDefault(); // Stop page refresh
+        setError('');
+        setLoading(true);
+
+        try {
+            // Call the service we updated earlier
+            const data = await login(identifier, password);
+            
+            // Dispatch to Redux (Updates global state)
+            dispatch(loginSuccess({ user: data.user, token: data.token }));
+            
+            // listens to 'isAuthenticated' from Redux.
+        } catch (err) {
+            // Show error to user
+            setError(err.message || "Login failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- GOOGLE LOGIN HANDLER ---
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         console.log("Google login success:", credentialResponse);
-        console.log("Selected role:", selectedRole);
         try {
-        const payload = {
-            provider: "google",
-            idToken: credentialResponse.credential,
-            role: selectedRole
-        };
-        console.log("Sending payload:", payload);
-        
-        const response = await apiClient.post('/api/auth/social-login', payload);
+            const payload = {
+                provider: "google",
+                idToken: credentialResponse.credential,
+                role: selectedRole
+            };
+            
+            // Note: Ensure your apiClient baseURL + this path is correct
+            const response = await apiClient.post('/auth/social-login', payload);
 
-        const { user, token } = response.data;
-        dispatch(loginSuccess({ user, token }));
+            const { user, token } = response.data;
+            dispatch(loginSuccess({ user, token }));
 
-    } catch (err) {
-        console.error("Backend login failed:", err);
-        console.error("Error response:", err.response?.data); 
-    }
+        } catch (err) {
+            console.error("Backend login failed:", err);
+            setError(err.response?.data?.message || "Social login failed");
+        }
     };
 
     const handleGoogleLoginError = () => {
         console.error('Google login failed');
+        setError('Google login failed. Please try again.');
     };
 
     return (
@@ -74,20 +102,48 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
-            {/* Email/Password Form */}
-            <form className="space-y-4">
-                <FormField id="email" label="Email" type="email" placeholder="you@example.com" />
-                <PasswordInput id="password" label="Password" placeholder="••••••••" />
+            {/* --- MANUAL FORM --- */}
+            <form className="space-y-4" onSubmit={handleManualLogin}>
+                <FormField 
+                    id="identifier" 
+                    label="Email or Mobile Number" 
+                    type="text" // 'text' allows both email and numbers
+                    placeholder="you@example.com or 0712345678"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                />
+                
+                <PasswordInput 
+                    id="password" 
+                    label="Password" 
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                
+                {/* Error Display */}
+                {error && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg">
+                        {error}
+                    </div>
+                )}
+
                 <div className="text-right">
                     <a href="#" className="text-sm font-medium text-blue-600 hover:underline">
                         Forgot password?
                     </a>
                 </div>
+                
                 <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+                    disabled={loading}
+                    className={`w-full bg-blue-600 text-white font-semibold py-3 rounded-lg 
+                        ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'} 
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm`}
                 >
-                    Log In
+                    {loading ? 'Logging in...' : 'Log In'}
                 </button>
             </form>
 
@@ -103,4 +159,3 @@ const LoginForm = ({ onSwitchToRegister }) => {
 };
 
 export default LoginForm;
-
