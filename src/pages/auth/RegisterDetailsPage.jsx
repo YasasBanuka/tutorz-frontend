@@ -31,6 +31,8 @@ const RegisterDetailsPage = () => {
     grade: '',
     parentName: '',
     dateOfBirth: '', // This starts as an empty string
+    instituteName: '', // <--- ADD THIS
+    address: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -71,17 +73,15 @@ const RegisterDetailsPage = () => {
 
     // Prepare Data
     const fullRegistrationData = {
-      ...stepOneData,
-      ...formData, 
-      // Map frontend fields to backend DTO names
-      schoolName: formData.school,
-      bankAccountNumber: formData.bankAccount,
-      
-      // Use the cleaned date variable
-      dateOfBirth: cleanDateOfBirth,
-      
-      ExperienceYears: 0
-    };
+            ...stepOneData,
+            ...formData,
+            schoolName: formData.school,
+            bankAccountNumber: formData.bankAccount,
+            dateOfBirth: cleanDateOfBirth,
+            ExperienceYears: 0,
+            instituteName: formData.instituteName,
+            address: formData.address
+        };
 
     // Call API via Custom Hook
     const result = await register(fullRegistrationData);
@@ -115,6 +115,13 @@ const RegisterDetailsPage = () => {
             <FormField id="grade" label="Grade" value={formData.grade} onChange={handleChange} />
             <FormField id="parentName" label="Parent Name" value={formData.parentName} onChange={handleChange} />
             <FormField id="dateOfBirth" label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={handleChange} />
+          </>
+        );
+      case ROLES.INSTITUTE:
+        return (
+          <>
+            <FormField id="instituteName" label="Institute Name" value={formData.instituteName} onChange={handleChange} required />
+            <FormField id="address" label="Address" value={formData.address} onChange={handleChange} required />
           </>
         );
       default:
