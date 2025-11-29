@@ -23,6 +23,18 @@ export const register = async (registrationData) => {
   }
 };
 
+export const checkEmailExists = async (email) => {
+    try {
+        const response = await apiClient.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
+        return response.data.exists;
+    } catch (err) {
+        console.error("Email check failed", err);
+        // If the check fails (e.g., server error), allow the user to proceed 
+        // and let the final registration step handle the error.
+        return false; 
+    }
+};
+
 /**
  * Calls the backend API to log in a user.
  * (You will need this for your LoginForm)

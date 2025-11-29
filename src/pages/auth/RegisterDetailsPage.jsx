@@ -30,8 +30,8 @@ const RegisterDetailsPage = () => {
     school: '',
     grade: '',
     parentName: '',
-    dateOfBirth: '', // This starts as an empty string
-    instituteName: '', // <--- ADD THIS
+    dateOfBirth: '', 
+    instituteName: '', 
     address: ''
   });
 
