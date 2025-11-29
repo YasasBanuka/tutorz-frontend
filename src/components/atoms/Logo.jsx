@@ -3,7 +3,7 @@ import React from 'react';
 import logoIcon from '../../assets/Images/learning-school-svgrepo-com.svg';
 
 const Logo = () => (
-    <div className="text-center mb-8">
+    <div className="text-center mb-4">
         <h1 className="text-4xl font-bold text-gray-800 tracking-wider flex justify-center items-center">
             <img 
                 src={logoIcon} 

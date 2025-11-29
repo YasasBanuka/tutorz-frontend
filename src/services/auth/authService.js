@@ -29,8 +29,6 @@ export const checkEmailExists = async (email) => {
         return response.data.exists;
     } catch (err) {
         console.error("Email check failed", err);
-        // If the check fails (e.g., server error), allow the user to proceed 
-        // and let the final registration step handle the error.
         return false; 
     }
 };
@@ -53,3 +51,19 @@ export const login = async (identifier, password) => {
     throw new Error(err.response?.data?.message || 'Login failed. Please try again.');
   }
 };
+
+/**
+ * Calls the backend to perform Social Login or Registration.
+ * @param {object} payload - { provider, idToken, role, phoneNumber, firstName, ...others }
+ */
+export const socialLogin = async (payload) => {
+    try {
+        // payload matches the Backend SocialLoginRequest DTO
+        const response = await apiClient.post('/auth/social-login', payload);
+        return response.data;
+    } catch (err) {
+        throw new Error(err.response?.data?.message || 'Social login failed.');
+    }
+};
+
+
