@@ -39,6 +39,12 @@ const LoginForm = ({ onSwitchToRegister }) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        if (password.length < 6 || password.length > 10) {
+            setError("Password must be between 6 and 10 characters.");
+            return;
+        }
+
         try {
             const data = await login(identifier, password);
             dispatch(loginSuccess({ user: data.user, token: data.token }));
@@ -85,13 +91,17 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 />
 
                 <PasswordInput
-                    id="password"
-                    label="Password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
+                id="password"
+                label="Password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Clear error on type
+                    if (error) setError(''); 
+                }}
+                required
+            />
 
                 {error && (
                     <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg">
@@ -100,7 +110,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 )}
                 
                 <div className="text-right">
-                    <a href="#" className="text-sm font-medium text-blue-600 hover:underline">
+                    <a href="/forgot-password" className="text-sm font-medium text-blue-600 hover:underline">
                         Forgot password?
                     </a>
                 </div>

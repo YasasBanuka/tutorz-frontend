@@ -13,6 +13,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState(''); 
+    const [passwordError, setPasswordError] = useState('');
     const [emailError, setEmailError] = useState(''); 
     const [roleError, setRoleError] = useState(''); 
     const [isChecking, setIsChecking] = useState(false);
@@ -81,9 +82,16 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         event.preventDefault();
         setEmailError('');
         setRoleError('');
+        setPasswordError('');
 
         // Validate Role first
         if (!validateRoleSelection()) return;
+
+        // Password Validation
+        if (password.length < 6 || password.length > 10) {
+            setPasswordError("Password must be between 6 and 10 characters.");
+            return;
+        }
 
         // Validate Email
         const emailValidation = validateEmail(email);
@@ -212,8 +220,13 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                     label="Password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        // Clear error when typing
+                        if (passwordError) setPasswordError(''); 
+                    }}
                     required
+                    error={passwordError} // Pass the error here
                 />
 
                 <button

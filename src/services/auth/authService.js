@@ -66,4 +66,21 @@ export const socialLogin = async (payload) => {
     }
 };
 
+export const forgotPassword = async (email) => {
+    try {
+        const response = await apiClient.post('/auth/forgot-password', { email });
+        return response.data;
+    } catch (err) {
+        throw new Error(err.response?.data?.message || 'Failed to send request.');
+    }
+};
+
+export const resetPassword = async (token, newPassword) => {
+    try {
+        const response = await apiClient.post('/auth/reset-password', { token, newPassword });
+        return response.data;
+    } catch (err) {
+        throw new Error(err.response?.data?.message || 'Failed to reset password.');
+    }
+};
 
