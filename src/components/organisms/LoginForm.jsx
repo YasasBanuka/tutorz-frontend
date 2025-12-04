@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google'; 
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { loginSuccess } from '../../store/authSlice.js';
 import { login, socialLogin } from '../../services/auth/authService.js';
 import SocialLoginButton from '../molecules/SocialLogin/SocialLoginButton.jsx';
@@ -9,6 +10,7 @@ import PasswordInput from '../molecules/PasswordInput.jsx';
 
 const LoginForm = ({ onSwitchToRegister }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -20,15 +22,31 @@ const LoginForm = ({ onSwitchToRegister }) => {
             try {
                 const payload = {
                     provider: "google",
-                    idToken: tokenResponse.access_token, 
-                    role: "Student" 
+                    idToken: tokenResponse.access_token,
+                    role: null 
+                };
+        
+                const data = await socialLogin(payload);
+        
+                // FIX: Construct user object from flat backend response
+                const userObj = {
+                    userId: data.userId,
+                    email: data.email,
+                    role: data.role,
+                    // Map other fields if your backend sends them (e.g., firstName)
+                    firstName: data.firstName, 
+                    lastName: data.lastName
                 };
 
-                const data = await socialLogin(payload);
-                dispatch(loginSuccess({ user: data.user, token: data.token }));
+                // Save to Redux
+                dispatch(loginSuccess({ user: userObj, token: data.token }));
+        
+                // Redirect to Dashboard
+                navigate('/dashboard'); 
+
             } catch (err) {
                 console.error("Login failed:", err);
-                setError(err.message || "Social login failed");
+                setError(err.message || "Social login failed"); 
             }
         },
         onError: () => setError('Google login failed.'),
@@ -42,12 +60,27 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
         if (password.length < 6 || password.length > 10) {
             setError("Password must be between 6 and 10 characters.");
+            setLoading(false);
             return;
         }
 
         try {
             const data = await login(identifier, password);
-            dispatch(loginSuccess({ user: data.user, token: data.token }));
+            
+            // FIX: Construct user object from flat backend response
+            const userObj = {
+                userId: data.userId,
+                email: data.email,
+                role: data.role,
+                firstName: data.firstName,
+                lastName: data.lastName
+            };
+
+            dispatch(loginSuccess({ user: userObj, token: data.token }));
+            
+            // Redirect to Dashboard
+            navigate('/dashboard');
+
         } catch (err) {
             setError(err.message || "Login failed");
         } finally {
@@ -58,16 +91,15 @@ const LoginForm = ({ onSwitchToRegister }) => {
     return (
         <div className="w-full">
             <h1 className="text-2xl font-semibold text-gray-900 text-center">Log in to your account</h1>
-            
+
             <div className="mt-6 space-y-4">
-                <SocialLoginButton 
-                    provider="google" 
-                    type="button" 
+                <SocialLoginButton
+                    provider="google"
+                    type="button"
                     onClick={() => handleGoogleLogin()}
                 >
                     Continue with Google
                 </SocialLoginButton>
-               
                 <SocialLoginButton provider="apple" type="button">
                     Continue with Apple
                 </SocialLoginButton>
@@ -91,24 +123,23 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 />
 
                 <PasswordInput
-                id="password"
-                label="Password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => {
-                    setPassword(e.target.value);
-                    // Clear error on type
-                    if (error) setError(''); 
-                }}
-                required
-            />
+                    id="password"
+                    label="Password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError('');
+                    }}
+                    required
+                />
 
                 {error && (
-                    <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg">
+                    <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200">
                         {error}
                     </div>
                 )}
-                
+
                 <div className="text-right">
                     <a href="/forgot-password" className="text-sm font-medium text-blue-600 hover:underline">
                         Forgot password?
@@ -119,8 +150,8 @@ const LoginForm = ({ onSwitchToRegister }) => {
                     type="submit"
                     disabled={loading}
                     className={`w-full bg-blue-600 text-white font-semibold py-3 rounded-lg
-                    ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm`}
+                        ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm`}
                 >
                     {loading ? 'Logging in...' : 'Log In'}
                 </button>

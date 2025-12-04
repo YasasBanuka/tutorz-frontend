@@ -1,13 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
-// 1. Import the new page you are about to create
-import RegisterDetailsPage from '../pages/auth/RegisterDetailsPage'; 
-// Import your dashboard page as well
-// import DashboardPage from '../pages/dashboard/DashboardPage';
-// import ProtectedRoute from './ProtectedRoute';
+import RegisterDetailsPage from '../pages/auth/RegisterDetailsPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
+import DashboardPage from '../pages/dashboard/DashboardPage';
+import ProtectedRoute from './ProtectedRoute';
 
 function AppRoutes() {
   return (
@@ -19,17 +17,14 @@ function AppRoutes() {
         <Route path="/register-details" element={<RegisterDetailsPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-        {/* Example of your future dashboard route
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        */}
       </Routes>
     </Router>
   );

@@ -1,0 +1,79 @@
+.atom-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.atom-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.atom-button--primary {
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+}
+.atom-button--primary:hover:not(:disabled) {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.atom-button--secondary {
+  background-color: #4b5563; /* gray-600 */
+  color: white;
+}
+.atom-button--secondary:hover:not(:disabled) {
+  background-color: #374151; /* gray-700 */
+}
+
+.atom-button--outline {
+  background-color: transparent;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+.atom-button--outline:hover:not(:disabled) {
+  background-color: #eff6ff; /* blue-50 */
+}
+
+.atom-button--ghost {
+  background-color: transparent;
+  color: #2563eb;
+}
+.atom-button--ghost:hover:not(:disabled) {
+  background-color: #eff6ff;
+}
+
+.atom-button--danger {
+  background-color: #dc2626; /* red-600 */
+  color: white;
+}
+.atom-button--danger:hover:not(:disabled) {
+  background-color: #b91c1c; /* red-700 */
+}
+
+/* Sizes */
+.atom-button--small {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.atom-button--medium {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.atom-button--large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+}
+
+/* Full Width */
+.atom-button--full-width {
+  width: 100%;
+}
