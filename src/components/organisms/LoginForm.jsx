@@ -42,7 +42,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 dispatch(loginSuccess({ user: userObj, token: data.token }));
         
                 // Redirect to Dashboard
-                navigate('/dashboard'); 
+                navigate('/dashboard', { replace: true });
 
             } catch (err) {
                 console.error("Login failed:", err);
@@ -79,7 +79,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
             dispatch(loginSuccess({ user: userObj, token: data.token }));
             
             // Redirect to Dashboard
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
 
         } catch (err) {
             setError(err.message || "Login failed");
