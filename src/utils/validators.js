@@ -22,3 +22,11 @@ export const validateRequired = (value, fieldName = 'Field') => {
   }
   return { isValid: true, message: '' };
 };
+
+// 👇 ADD THIS FUNCTION
+export const validateSocialProvider = (provider) => {
+  if (provider === 'apple') {
+    return { isValid: false, message: 'Apple Login is coming soon.' };
+  }
+  return { isValid: true, message: '' };
+};
