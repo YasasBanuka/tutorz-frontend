@@ -4,7 +4,7 @@ import RegisterPage from '../pages/auth/RegisterPage';
 import RegisterDetailsPage from '../pages/auth/RegisterDetailsPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
-import DashboardPage from '../pages/dashboard/DashboardPage';
+import DashboardPage from '../pages/dashboard/DashboardHome';
 import ProtectedRoute from './ProtectedRoute';
 
 function AppRoutes() {
