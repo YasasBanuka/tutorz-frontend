@@ -7,7 +7,7 @@ import PasswordInput from '../molecules/PasswordInput.jsx';
 import Label from '../atoms/Label.jsx';
 import { checkEmailExists } from '../../services/auth/authService.js';
 import { getGoogleUserProfile } from '../../services/auth/googleAuthService.js';
-import { validateEmail } from '../../utils/validators.js';
+import { validateEmail, validateSocialProvider } from '../../utils/validators.js';
 
 const RegisterForm = ({ onSwitchToLogin }) => {
     const [email, setEmail] = useState('');
@@ -17,8 +17,20 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     const [emailError, setEmailError] = useState(''); 
     const [roleError, setRoleError] = useState(''); 
     const [isChecking, setIsChecking] = useState(false);
+    const [appleError, setAppleError] = useState('');
     
     const navigate = useNavigate();
+
+    const handleAppleClick = () => {
+        setAppleError(''); 
+        
+        if (!validateRoleSelection()) return;
+
+        const validation = validateSocialProvider('apple');
+        if (!validation.isValid) {
+            setAppleError(validation.message);
+        }
+    };
 
     // VALIDATION HELPER
     const validateRoleSelection = () => {
@@ -181,17 +193,21 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                     Sign up with Google
                 </SocialLoginButton>
 
-                <SocialLoginButton 
-                    provider="apple" 
-                    onClick={() => {
-                        if(validateRoleSelection()) {
-                           // handleAppleLogin() - not implemented yet
-                        }
-                    }}
-                    type="button"
-                >
-                    Sign up with Apple
-                </SocialLoginButton>
+                 <div className="flex flex-col">
+                    <SocialLoginButton 
+                        provider="apple" 
+                        onClick={handleAppleClick}
+                        type="button"
+                    >
+                        Sign up with Apple
+                    </SocialLoginButton>
+                    
+                    {appleError && (
+                        <p className="text-xs text-red-500 mt-2 text-center font-medium ">
+                            {appleError}
+                        </p>
+                    )}
+                </div>
             </div>
 
             <div className="my-6 flex items-center">
