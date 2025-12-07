@@ -7,6 +7,7 @@ import { login, socialLogin } from '../../services/auth/authService.js';
 import SocialLoginButton from '../molecules/SocialLogin/SocialLoginButton.jsx';
 import FormField from '../molecules/FormField.jsx';
 import PasswordInput from '../molecules/PasswordInput.jsx';
+import { validateSocialProvider } from '../../utils/validators.js';
 
 const LoginForm = ({ onSwitchToRegister }) => {
     const dispatch = useDispatch();
@@ -15,6 +16,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [appleError, setAppleError] = useState('');
 
     // GOOGLE LOGIN HANDLER
     const handleGoogleLogin = useGoogleLogin({
@@ -51,6 +53,16 @@ const LoginForm = ({ onSwitchToRegister }) => {
         },
         onError: () => setError('Google login failed.'),
     });
+
+     const handleAppleLogin = () => {
+        setAppleError(''); 
+        const validation = validateSocialProvider('apple');
+        
+        if (!validation.isValid) {
+            setAppleError(validation.message);
+            return;
+        }
+    };
 
     // MANUAL LOGIN
     const handleManualLogin = async (e) => {
@@ -100,9 +112,21 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 >
                     Continue with Google
                 </SocialLoginButton>
-                <SocialLoginButton provider="apple" type="button">
-                    Continue with Apple
+                    <div className="flex flex-col">
+                <SocialLoginButton 
+                        provider="apple" 
+                        type="button"
+                        onClick={handleAppleLogin}
+                    >
+                        Continue with Apple
                 </SocialLoginButton>
+                    
+                    {appleError && (
+                        <p className="text-xs text-red-500 mt-2 text-center font-medium ">
+                            {appleError}
+                        </p>
+                    )}
+                </div>
             </div>
 
             <div className="my-6 flex items-center">
