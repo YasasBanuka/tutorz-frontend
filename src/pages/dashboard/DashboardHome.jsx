@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { ROLES } from '../../utils/constants';
 
-// Tutor Specific Components
+// Services & Hooks
+import useApi from '../../hooks/useApi';
+import * as tutorService from '../../services/api/tutorService';
+
+// Icons & Components
 import { QrCode, Plus } from 'lucide-react';
 import StatsGrid from '../../components/organisms/StatsGrid';
 import UpcomingClasses from '../../components/organisms/UpcomingClasses';
 import QuickActions from '../../components/organisms/QuickActions';
+import ClassFormModal from '../../components/organisms/ClassFormModal'; // Import the modal
 
 const DashboardHome = () => {
   const { user } = useAuth();
+
+  // -- State for Modals --
+  const [isClassModalOpen, setClassModalOpen] = useState(false);
+  
+  // -- API Hooks --
+  const { request: saveClass, loading: isSaving } = useApi();
+
+  // -- Handlers --
+  const handleClassSubmit = async (formData) => {
+    const result = await saveClass(tutorService.createClass, formData);
+    if (result.data) {
+      setClassModalOpen(false);
+      // Optional: Force reload to show new data, or use a context to refresh
+      window.location.reload(); 
+    }
+  };
 
   // --- TUTOR DASHBOARD CONTENT ---
   const renderTutorDashboard = () => (
@@ -25,7 +46,12 @@ const DashboardHome = () => {
             <QrCode size={18} />
             <span>Scan Student QR</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+          
+          {/* ACTION: Added onClick to open the modal */}
+          <button 
+            onClick={() => setClassModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+          >
             <Plus size={18} />
             <span>Create Class</span>
           </button>
@@ -33,6 +59,7 @@ const DashboardHome = () => {
       </div>
       
       <StatsGrid />
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <UpcomingClasses />
@@ -41,6 +68,14 @@ const DashboardHome = () => {
           <QuickActions />
         </div>
       </div>
+
+      {/* ACTION: Render the Modal here */}
+      <ClassFormModal 
+        isOpen={isClassModalOpen} 
+        onClose={() => setClassModalOpen(false)} 
+        onSubmit={handleClassSubmit}
+        isSubmitting={isSaving}
+      />
     </div>
   );
 
@@ -59,9 +94,6 @@ const DashboardHome = () => {
   );
 
   // --- SWITCH LOGIC ---
-  // If you want to FORCE Tutor view for now, uncomment the line below:
-  // return renderTutorDashboard(); 
-
   switch (user?.role) {
     case ROLES.TUTOR:
       return renderTutorDashboard();
@@ -70,7 +102,6 @@ const DashboardHome = () => {
     case ROLES.INSTITUTE:
       return renderInstituteDashboard();
     default:
-      // Fallback: If role is missing or unknown, show Tutor view (or error)
       return renderTutorDashboard(); 
   }
 };
