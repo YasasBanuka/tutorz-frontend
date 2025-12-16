@@ -10,7 +10,17 @@ export const useAuth = () => {
   const login = async (email, password) => {
     try {
       const data = await loginService(email, password);
-      dispatch(loginSuccess({ user: data.user, token: data.token }));
+      // Ensure we pass the full user details provided by the backend
+      dispatch(loginSuccess({ 
+        user: {
+          userId: data.userId,
+          email: data.email,
+          role: data.role,
+          firstName: data.firstName, // Make sure these are captured
+          lastName: data.lastName
+        }, 
+        token: data.token 
+      }));
       return { success: true };
     } catch (error) {
       return { success: false, error };
@@ -21,9 +31,18 @@ export const useAuth = () => {
   const register = async (registrationData) => {
     try {
       const data = await registerService(registrationData);
-      // Automatically log the user in after registration
+      
+      // FIX: Previously we were missing firstName/lastName here
       dispatch(loginSuccess({
-        user: { userId: data.userId, email: data.email, role: data.role },
+        user: { 
+          userId: data.userId, 
+          email: data.email, 
+          role: data.role,
+          // We try to get these from the response 'data', 
+          // or fallback to the form data 'registrationData' if backend doesn't return them immediately
+          firstName: data.firstName || registrationData.firstName,
+          lastName: data.lastName || registrationData.lastName
+        },
         token: data.token
       }));
       return { success: true };
@@ -32,11 +51,8 @@ export const useAuth = () => {
     }
   };
 
-  // Wrapper for Logout
   const logoutUser = () => {
     dispatch(logout());
-    // You might also want to clear local storage here if you use it
-    // localStorage.removeItem('token');
   };
 
   return {
