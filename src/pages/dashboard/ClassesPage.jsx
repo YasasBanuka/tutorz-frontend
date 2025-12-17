@@ -128,10 +128,12 @@ const ClassesPage = () => {
             {filteredClasses.map((cls) => (
                 <div key={cls.classId} className="relative">
                     <ClassCard 
-                        subject={cls.subject} 
-                        time={`${cls.dayOfWeek} ${cls.startTime}`} 
+                        subject={cls.subject}
+                        grade={cls.grade} // Passed Grade
+                        time={`${cls.dayOfWeek} ${cls.startTime} - ${cls.endTime}`} // Better time formatting
                         students={cls.studentCount} 
-                        status={cls.isActive ? 'active' : 'inactive'}
+                        fee={cls.fee} // Passed Fee
+                        status={cls.isActive ? 'active' : 'inactive'} // Ensure backend sends isActive or default to true
                     />
                     <div className="absolute top-4 right-4 flex gap-2">
                         <button 
