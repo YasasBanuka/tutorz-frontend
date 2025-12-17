@@ -11,25 +11,55 @@ import { QrCode, Plus } from 'lucide-react';
 import StatsGrid from '../../components/organisms/StatsGrid';
 import UpcomingClasses from '../../components/organisms/UpcomingClasses';
 import QuickActions from '../../components/organisms/QuickActions';
-import ClassFormModal from '../../components/organisms/ClassFormModal'; // Import the modal
+import ClassFormModal from '../../components/organisms/ClassFormModal';
+import ConfirmationModal from '../../components/molecules/ConfirmationModal'; // Import Confirmation
 
-const DashboardHome = () => {
+// Import Pages for Navigation
+import ClassesPage from './ClassesPage';
+
+const DashboardHome = ({ activePage, setActivePage }) => {
   const { user } = useAuth();
-
-  // -- State for Modals --
+  
+  // -- State for Dashboard Quick Actions --
   const [isClassModalOpen, setClassModalOpen] = useState(false);
   
-  // -- API Hooks --
+  // Confirmation States
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
+
+  // API Hooks
   const { request: saveClass, loading: isSaving } = useApi();
 
-  // -- Handlers --
-  const handleClassSubmit = async (formData) => {
-    const result = await saveClass(tutorService.createClass, formData);
+  // --- NAVIGATION SWITCHER ---
+  // If Sidebar selected 'classes', show the Classes Page immediately
+  if (activePage === 'classes') {
+     return <ClassesPage />;
+  }
+
+  // --- DASHBOARD HANDLERS ---
+  
+  // 1. Intercept Submit
+  const handleClassSubmit = (formData) => {
+    setPendingFormData(formData);
+    setIsConfirmOpen(true);
+  };
+
+  // 2. Confirm Save
+  const handleConfirmSave = async () => {
+    const result = await saveClass(tutorService.createClass, pendingFormData);
     if (result.data) {
+      setIsConfirmOpen(false);
       setClassModalOpen(false);
-      // Optional: Force reload to show new data, or use a context to refresh
-      window.location.reload(); 
+      setPendingFormData(null);
+      setIsSuccessOpen(true);
+      // We don't reload here, user can refresh if needed or we update context
     }
+  };
+
+  const handleSuccessClose = () => {
+      setIsSuccessOpen(false);
+      window.location.reload(); // Reload to show new stats/classes
   };
 
   // --- TUTOR DASHBOARD CONTENT ---
@@ -47,7 +77,6 @@ const DashboardHome = () => {
             <span>Scan Student QR</span>
           </button>
           
-          {/* ACTION: Added onClick to open the modal */}
           <button 
             onClick={() => setClassModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
@@ -69,12 +98,34 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* ACTION: Render the Modal here */}
+      {/* --- DASHBOARD MODALS --- */}
       <ClassFormModal 
         isOpen={isClassModalOpen} 
         onClose={() => setClassModalOpen(false)} 
         onSubmit={handleClassSubmit}
         isSubmitting={isSaving}
+      />
+
+      <ConfirmationModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSave}
+        title="Create Class"
+        message="Are you sure you want to create this new class?"
+        confirmLabel="Create"
+        cancelLabel="Cancel"
+        variant="primary"
+      />
+
+      <ConfirmationModal
+        isOpen={isSuccessOpen}
+        onClose={handleSuccessClose}
+        onConfirm={handleSuccessClose}
+        title="Success"
+        message="Class added successfully!"
+        confirmLabel="OK"
+        cancelLabel="Close"
+        variant="success"
       />
     </div>
   );
@@ -93,7 +144,6 @@ const DashboardHome = () => {
     </div>
   );
 
-  // --- SWITCH LOGIC ---
   switch (user?.role) {
     case ROLES.TUTOR:
       return renderTutorDashboard();

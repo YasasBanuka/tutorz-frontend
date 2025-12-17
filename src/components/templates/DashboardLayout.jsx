@@ -4,7 +4,7 @@ import TopNavbar from '../organisms/TopNavbar';
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 768);
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('dashboard'); // State lives here
 
   const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
 
@@ -28,8 +28,13 @@ const DashboardLayout = ({ children }) => {
           ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}
         `}
       >
-        {/* This is where the Role-Based content will be injected */}
-        {children}
+
+        {React.Children.map(children, child => {
+          if (React.isValidElement(child)) {
+             return React.cloneElement(child, { activePage, setActivePage });
+          }
+          return child;
+        })}
       </main>
     </div>
   );

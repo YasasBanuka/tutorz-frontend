@@ -3,6 +3,7 @@ import { Plus, Edit2, UserPlus, Search } from 'lucide-react';
 import ClassCard from '../../components/molecules/ClassCard';
 import ClassFormModal from '../../components/organisms/ClassFormModal';
 import AddStudentModal from '../../components/organisms/AddStudentModal';
+import ConfirmationModal from '../../components/molecules/ConfirmationModal'; // Import ConfirmationModal
 import useApi from '../../hooks/useApi';
 import * as tutorService from '../../services/api/tutorService';
 
@@ -14,6 +15,11 @@ const ClassesPage = () => {
   const [editingClass, setEditingClass] = useState(null);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Confirmation & Success Modal States
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
 
   // API Hooks
   const { request: fetchClasses, loading: isLoading } = useApi();
@@ -45,17 +51,27 @@ const ClassesPage = () => {
     setStudentModalOpen(true);
   };
 
-  const handleClassSubmit = async (formData) => {
+  // 1. Intercept Submit: Store data and open Confirmation Modal
+  const handleClassSubmit = (formData) => {
+    setPendingFormData(formData);
+    setIsConfirmOpen(true);
+  };
+
+  // 2. Proceed with Save after Confirmation
+  const handleConfirmSave = async () => {
     let result;
     if (editingClass) {
-      result = await saveClass(tutorService.updateClass, editingClass.classId, formData);
+      result = await saveClass(tutorService.updateClass, editingClass.classId, pendingFormData);
     } else {
-      result = await saveClass(tutorService.createClass, formData);
+      result = await saveClass(tutorService.createClass, pendingFormData);
     }
 
     if (result.data) {
-      setClassModalOpen(false);
+      setIsConfirmOpen(false); // Close confirmation
+      setClassModalOpen(false); // Close form
+      setPendingFormData(null); // Clear temp data
       loadClasses(); // Refresh list
+      setIsSuccessOpen(true); // Show Success Modal
     }
   };
 
@@ -111,14 +127,12 @@ const ClassesPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClasses.map((cls) => (
                 <div key={cls.classId} className="relative">
-                    {/* Reuse ClassCard but wrap or overlay actions */}
                     <ClassCard 
                         subject={cls.subject} 
                         time={`${cls.dayOfWeek} ${cls.startTime}`} 
                         students={cls.studentCount} 
                         status={cls.isActive ? 'active' : 'inactive'}
                     />
-                    {/* Action Bar Overlay or Append */}
                     <div className="absolute top-4 right-4 flex gap-2">
                         <button 
                             onClick={() => handleEditClick(cls)} 
@@ -145,20 +159,51 @@ const ClassesPage = () => {
         </div>
       )}
 
-      {/* Modals */}
+      {/* --- MODALS --- */}
+
+      {/* 1. Class Form Modal */}
       <ClassFormModal 
         isOpen={isClassModalOpen} 
         onClose={() => setClassModalOpen(false)} 
-        onSubmit={handleClassSubmit}
+        onSubmit={handleClassSubmit} // Opens Confirmation Modal now
         initialData={editingClass}
         isSubmitting={isSaving}
       />
 
+      {/* 2. Add Student Modal */}
       <AddStudentModal
         isOpen={isStudentModalOpen}
         onClose={() => setStudentModalOpen(false)}
         onSubmit={handleStudentSubmit}
         isSubmitting={isSaving}
+      />
+
+      {/* 3. Confirmation Modal (Add/Edit Class) */}
+      <ConfirmationModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSave}
+        title={editingClass ? "Update Class" : "Create Class"}
+        message={editingClass 
+            ? "Are you sure you want to update this class details?" 
+            : "Are you sure you want to create this new class?"}
+        confirmLabel={editingClass ? "Update" : "Create"}
+        cancelLabel="Cancel"
+        variant="primary"
+      />
+
+      {/* 4. Success Modal */}
+      <ConfirmationModal
+        isOpen={isSuccessOpen}
+        onClose={() => setIsSuccessOpen(false)}
+        onConfirm={() => setIsSuccessOpen(false)}
+        title="Success"
+        message={editingClass 
+            ? "Class updated successfully!" 
+            : "Class added successfully!"}
+        confirmLabel="OK"
+        cancelLabel="Close"
+        variant="success"
       />
     </div>
   );
