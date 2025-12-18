@@ -1,28 +1,114 @@
 import React from 'react';
-import { BookOpen, Calendar, Users } from 'lucide-react';
-import StatusBadge from '../atoms/StatusBadge';
+import { Clock, Users, BookOpen, Presentation, GraduationCap, PenTool } from 'lucide-react';
 
-const ClassCard = ({ subject, time, students, hall, status }) => (
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors group">
-    <div className="flex items-start gap-4">
-      <div className="p-3 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100 transition-colors">
-        <BookOpen size={24} />
-      </div>
-      <div>
-        <h3 className="font-semibold text-gray-900">{subject}</h3>
-        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-          <span className="flex items-center gap-1"><Calendar size={14} /> {time}</span>
-          <span className="flex items-center gap-1"><Users size={14} /> {students} Students</span>
+const ClassCard = ({ className, subject, grade, time, students, status, fee, classType }) => {
+  
+  const getTypeConfig = (type) => {
+    switch (type) {
+      case 'Seminar':
+        return { 
+          icon: <Presentation size={18} />, 
+          color: 'text-purple-600', 
+          bg: 'bg-purple-50', 
+          border: 'border-purple-100',
+          label: 'Seminar'
+        };
+      case 'Workshop':
+        return { 
+          icon: <PenTool size={18} />, 
+          color: 'text-orange-600', 
+          bg: 'bg-orange-50', 
+          border: 'border-orange-100',
+          label: 'Workshop'
+        };
+      case 'Course':
+        return { 
+          icon: <GraduationCap size={18} />, 
+          color: 'text-emerald-600', 
+          bg: 'bg-emerald-50', 
+          border: 'border-emerald-100',
+          label: 'Course'
+        };
+      case 'Class':
+      default:
+        return { 
+          icon: <BookOpen size={18} />, 
+          color: 'text-blue-600', 
+          bg: 'bg-blue-50', 
+          border: 'border-blue-100',
+          label: 'Class'
+        };
+    }
+  };
+
+  const typeStyle = getTypeConfig(classType);
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden flex flex-col h-full">
+      {/* Status Stripe */}
+      <div className={`absolute top-0 left-0 w-1 h-full ${status === 'active' ? 'bg-blue-500' : 'bg-gray-300'}`} />
+
+      <div className="p-5 flex flex-col h-full">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex flex-col items-start w-full">
+            
+            {/* Badges Row */}
+            <div className="flex gap-2 mb-2">
+                {/* Grade Badge */}
+                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wide rounded-md">
+                  {grade}
+                </span>
+                {/* Type Badge (Text) */}
+                <span className={`inline-block px-2 py-1 ${typeStyle.bg} ${typeStyle.color} text-[10px] font-bold uppercase tracking-wide rounded-md`}>
+                  {typeStyle.label}
+                </span>
+            </div>
+
+            <h3 className="font-bold text-lg text-gray-900 leading-tight pr-8">
+                {className || subject}
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5 font-medium">{subject}</p>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="space-y-2 mt-2 flex-grow">
+          <div className="flex items-center text-sm text-gray-600">
+            <Clock size={16} className="mr-2 text-gray-400" />
+            <span>{time}</span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <Users size={16} className="mr-2 text-gray-400" />
+            <span>{students} Students Enrolled</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-end">
+            {/* Price (Left Side) */}
+            <div className="text-sm font-medium text-gray-900 pb-1">
+                LKR {fee} <span className="text-gray-400 font-normal">/ month</span>
+            </div>
+            
+            {/* Right Side: Icon + Status Stacked */}
+            <div className="flex flex-col items-end gap-2">
+                {/* MOVED ICON HERE */}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${typeStyle.bg} ${typeStyle.color} border ${typeStyle.border}`}>
+                   {typeStyle.icon}
+                </div>
+
+                {/* Status Badge */}
+                <span className={`w-20 text-center inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                    status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                }`}>
+                    {status === 'active' ? 'Active' : 'Inactive'}
+                </span>
+            </div>
         </div>
       </div>
     </div>
-    <div className="mt-4 sm:mt-0 flex items-center gap-3">
-      <StatusBadge status={status} />
-      <button className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors">
-        Start Class
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 export default ClassCard;
