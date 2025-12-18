@@ -19,3 +19,8 @@ export const addStudentToClass = async (data) => {
   const response = await apiClient.post('/tutor/classes/add-student', data);
   return response.data;
 };
+
+export const deleteClass = async (id) => {
+  const response = await apiClient.delete(`/tutor/classes/${id}`);
+  return response.data;
+};

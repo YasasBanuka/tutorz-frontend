@@ -1,28 +1,79 @@
 import React from 'react';
-import { Clock, Users, MoreVertical, BookOpen } from 'lucide-react';
+import { Clock, Users, BookOpen, Presentation, GraduationCap, PenTool } from 'lucide-react';
 
-const ClassCard = ({ subject, grade, time, students, status, fee }) => {
+const ClassCard = ({ className, subject, grade, time, students, status, fee, classType }) => {
+  
+  const getTypeConfig = (type) => {
+    switch (type) {
+      case 'Seminar':
+        return { 
+          icon: <Presentation size={18} />, 
+          color: 'text-purple-600', 
+          bg: 'bg-purple-50', 
+          border: 'border-purple-100',
+          label: 'Seminar'
+        };
+      case 'Workshop':
+        return { 
+          icon: <PenTool size={18} />, 
+          color: 'text-orange-600', 
+          bg: 'bg-orange-50', 
+          border: 'border-orange-100',
+          label: 'Workshop'
+        };
+      case 'Course':
+        return { 
+          icon: <GraduationCap size={18} />, 
+          color: 'text-emerald-600', 
+          bg: 'bg-emerald-50', 
+          border: 'border-emerald-100',
+          label: 'Course'
+        };
+      case 'Class':
+      default:
+        return { 
+          icon: <BookOpen size={18} />, 
+          color: 'text-blue-600', 
+          bg: 'bg-blue-50', 
+          border: 'border-blue-100',
+          label: 'Class'
+        };
+    }
+  };
+
+  const typeStyle = getTypeConfig(classType);
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 group relative overflow-hidden flex flex-col h-full">
       {/* Status Stripe */}
       <div className={`absolute top-0 left-0 w-1 h-full ${status === 'active' ? 'bg-blue-500' : 'bg-gray-300'}`} />
 
-      <div className="p-5">
+      <div className="p-5 flex flex-col h-full">
         {/* Header */}
         <div className="flex justify-between items-start mb-3">
-          <div>
-            <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wide rounded-md mb-1">
-              {grade}
-            </span>
-            <h3 className="font-bold text-lg text-gray-900 leading-tight">{subject}</h3>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-            <BookOpen size={16} />
+          <div className="flex flex-col items-start w-full">
+            
+            {/* Badges Row */}
+            <div className="flex gap-2 mb-2">
+                {/* Grade Badge */}
+                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wide rounded-md">
+                  {grade}
+                </span>
+                {/* Type Badge (Text) */}
+                <span className={`inline-block px-2 py-1 ${typeStyle.bg} ${typeStyle.color} text-[10px] font-bold uppercase tracking-wide rounded-md`}>
+                  {typeStyle.label}
+                </span>
+            </div>
+
+            <h3 className="font-bold text-lg text-gray-900 leading-tight pr-8">
+                {className || subject}
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5 font-medium">{subject}</p>
           </div>
         </div>
 
         {/* Details */}
-        <div className="space-y-2 mt-4">
+        <div className="space-y-2 mt-2 flex-grow">
           <div className="flex items-center text-sm text-gray-600">
             <Clock size={16} className="mr-2 text-gray-400" />
             <span>{time}</span>
@@ -34,16 +85,26 @@ const ClassCard = ({ subject, grade, time, students, status, fee }) => {
         </div>
 
         {/* Footer */}
-        <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
-            <div className="text-sm font-medium text-gray-900">
+        <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-end">
+            {/* Price (Left Side) */}
+            <div className="text-sm font-medium text-gray-900 pb-1">
                 LKR {fee} <span className="text-gray-400 font-normal">/ month</span>
             </div>
-            {/* Status Badge */}
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-            }`}>
-                {status === 'active' ? 'Active' : 'Inactive'}
-            </span>
+            
+            {/* Right Side: Icon + Status Stacked */}
+            <div className="flex flex-col items-end gap-2">
+                {/* MOVED ICON HERE */}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${typeStyle.bg} ${typeStyle.color} border ${typeStyle.border}`}>
+                   {typeStyle.icon}
+                </div>
+
+                {/* Status Badge */}
+                <span className={`w-20 text-center inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                    status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                }`}>
+                    {status === 'active' ? 'Active' : 'Inactive'}
+                </span>
+            </div>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Plus, Edit2, UserPlus, Search } from 'lucide-react';
 import ClassCard from '../../components/molecules/ClassCard';
 import ClassFormModal from '../../components/organisms/ClassFormModal';
 import AddStudentModal from '../../components/organisms/AddStudentModal';
-import ConfirmationModal from '../../components/molecules/ConfirmationModal'; // Import ConfirmationModal
+import ConfirmationModal from '../../components/molecules/ConfirmationModal'; 
 import useApi from '../../hooks/useApi';
 import * as tutorService from '../../services/api/tutorService';
 
@@ -19,11 +19,22 @@ const ClassesPage = () => {
   // Confirmation & Success Modal States
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(""); 
+
+  // Delete States
+  const [classToDelete, setClassToDelete] = useState(null);
+  const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // NEW: Status Change States
+  const [statusCandidate, setStatusCandidate] = useState(null);
+  const [isStatusConfirmOpen, setStatusConfirmOpen] = useState(false);
+  
   const [pendingFormData, setPendingFormData] = useState(null);
 
   // API Hooks
   const { request: fetchClasses, loading: isLoading } = useApi();
   const { request: saveClass, loading: isSaving } = useApi();
+  const { request: removeClass, loading: isDeleting } = useApi();
 
   // Load Classes
   useEffect(() => {
@@ -35,7 +46,8 @@ const ClassesPage = () => {
     if (data) setClasses(data);
   };
 
-  // Handlers
+  // --- HANDLERS ---
+
   const handleCreateClick = () => {
     setEditingClass(null);
     setClassModalOpen(true);
@@ -46,33 +58,113 @@ const ClassesPage = () => {
     setClassModalOpen(true);
   };
 
+  const handleDeleteClick = (classId) => {
+    setClassModalOpen(false); 
+    setClassToDelete(classId);
+    setDeleteConfirmOpen(true); 
+  };
+
   const handleAddStudentClick = (classId) => {
     setSelectedClassId(classId);
     setStudentModalOpen(true);
   };
+  
+  // Triggered when toggle is clicked in Modal
+  const handleStatusChangeRequest = (currentFormData) => {
+    setStatusCandidate(currentFormData);
+    setStatusConfirmOpen(true); // Open specific status confirmation
+  };
 
-  // 1. Intercept Submit: Store data and open Confirmation Modal
+  const preparePayload = (data) => {
+    return {
+      ...data,
+      // Convert empty string date to null
+      date: data.date === "" ? null : data.date,
+      // Ensure numeric fee
+      fee: parseFloat(data.fee),
+      // Ensure dayOfWeek is string or null (not array)
+      dayOfWeek: Array.isArray(data.dayOfWeek) ? data.dayOfWeek.join(',') : data.dayOfWeek
+    };
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!statusCandidate) return;
+
+    const newStatus = !statusCandidate.isActive;
+    
+    // Prepare the payload
+    const cleanPayload = preparePayload(statusCandidate);
+    
+    // Toggle the status
+    cleanPayload.isActive = newStatus; 
+
+    // Call API
+    const result = await saveClass(tutorService.updateClass, statusCandidate.classId, cleanPayload);
+
+    if (result.data) {
+        setStatusConfirmOpen(false);
+        setEditingClass(result.data); 
+        loadClasses(); 
+        setSuccessMessage(`Class ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+        setIsSuccessOpen(true);
+    }
+  };
+
   const handleClassSubmit = (formData) => {
     setPendingFormData(formData);
     setIsConfirmOpen(true);
   };
 
-  // 2. Proceed with Save after Confirmation
   const handleConfirmSave = async () => {
+    console.log("1. Starting Save..."); 
+    
+    // Ensure payload is prepared
+    const cleanPayload = preparePayload(pendingFormData);
+    console.log("2. Payload:", cleanPayload); 
+
     let result;
     if (editingClass) {
-      result = await saveClass(tutorService.updateClass, editingClass.classId, pendingFormData);
+      // Update Mode
+      result = await saveClass(tutorService.updateClass, editingClass.classId, cleanPayload);
     } else {
-      result = await saveClass(tutorService.createClass, pendingFormData);
+      // Create Mode
+      result = await saveClass(tutorService.createClass, cleanPayload);
     }
 
-    if (result.data) {
-      setIsConfirmOpen(false); // Close confirmation
-      setClassModalOpen(false); // Close form
-      setPendingFormData(null); // Clear temp data
-      loadClasses(); // Refresh list
-      setIsSuccessOpen(true); // Show Success Modal
+    console.log("3. API Result:", result);
+
+    if (result && result.data) {
+      console.log("4. Success! Opening Success Modal."); 
+      
+      // Close the Confirmation Modal & Form
+      setIsConfirmOpen(false);
+      setClassModalOpen(false);
+      
+      // Clear Form Data
+      setPendingFormData(null);
+      
+      // Refresh the list
+      loadClasses();
+
+      // Set Success Message & Open Success Modal
+      const msg = editingClass ? "Class updated successfully!" : "Class added successfully!";
+      setSuccessMessage(msg);
+      setIsSuccessOpen(true);
+    } else {
+      console.error("5. Save failed or no data returned", result);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+      if (!classToDelete) return;
+      const result = await removeClass(tutorService.deleteClass, classToDelete);
+      if (result) {
+          setDeleteConfirmOpen(false);
+          setClassToDelete(null);
+          loadClasses(); 
+          setSuccessMessage("Class deleted successfully!");
+          setIsSuccessOpen(true);
+      }
   };
 
   const handleStudentSubmit = async (regNo) => {
@@ -81,12 +173,12 @@ const ClassesPage = () => {
         studentRegistrationNumber: regNo 
     });
     if (data) {
-      alert("Student Added Successfully!");
+      setSuccessMessage("Student added successfully!");
+      setIsSuccessOpen(true);
       setStudentModalOpen(false);
     }
   };
 
-  // Filter Classes
   const filteredClasses = classes.filter(c => 
     c.subject.toLowerCase().includes(searchTerm.toLowerCase()) || 
     c.grade.toLowerCase().includes(searchTerm.toLowerCase())
@@ -94,7 +186,6 @@ const ClassesPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <h1 className="text-2xl font-bold text-gray-900">My Classes</h1>
@@ -108,7 +199,6 @@ const ClassesPage = () => {
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input 
@@ -120,7 +210,6 @@ const ClassesPage = () => {
         />
       </div>
 
-      {/* Grid */}
       {isLoading ? (
         <div className="text-center py-10">Loading classes...</div>
       ) : (
@@ -128,12 +217,14 @@ const ClassesPage = () => {
             {filteredClasses.map((cls) => (
                 <div key={cls.classId} className="relative">
                     <ClassCard 
-                        subject={cls.subject}
-                        grade={cls.grade} // Passed Grade
-                        time={`${cls.dayOfWeek} ${cls.startTime} - ${cls.endTime}`} // Better time formatting
+                        className={cls.className}
+                        subject={cls.subject} 
+                        grade={cls.grade}
+                        classType={cls.classType} 
+                        time={`${cls.dayOfWeek || (cls.date ? cls.date.split('T')[0] : '')} ${cls.startTime} - ${cls.endTime}`} 
                         students={cls.studentCount} 
-                        fee={cls.fee} // Passed Fee
-                        status={cls.isActive ? 'active' : 'inactive'} // Ensure backend sends isActive or default to true
+                        fee={cls.fee}
+                        status={cls.isActive ? 'active' : 'inactive'}
                     />
                     <div className="absolute top-4 right-4 flex gap-2">
                         <button 
@@ -163,16 +254,16 @@ const ClassesPage = () => {
 
       {/* --- MODALS --- */}
 
-      {/* 1. Class Form Modal */}
       <ClassFormModal 
         isOpen={isClassModalOpen} 
         onClose={() => setClassModalOpen(false)} 
-        onSubmit={handleClassSubmit} // Opens Confirmation Modal now
+        onSubmit={handleClassSubmit}
+        onDelete={handleDeleteClick} 
+        onStatusChange={handleStatusChangeRequest}
         initialData={editingClass}
         isSubmitting={isSaving}
       />
 
-      {/* 2. Add Student Modal */}
       <AddStudentModal
         isOpen={isStudentModalOpen}
         onClose={() => setStudentModalOpen(false)}
@@ -180,7 +271,6 @@ const ClassesPage = () => {
         isSubmitting={isSaving}
       />
 
-      {/* 3. Confirmation Modal (Add/Edit Class) */}
       <ConfirmationModal
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
@@ -194,15 +284,37 @@ const ClassesPage = () => {
         variant="primary"
       />
 
-      {/* 4. Success Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Class?"
+        message="Are you sure you want to delete this class? This action cannot be undone."
+        confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      {/* NEW: Status Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isStatusConfirmOpen}
+        onClose={() => setStatusConfirmOpen(false)}
+        onConfirm={handleConfirmStatusChange}
+        title={statusCandidate?.isActive ? "Deactivate Class?" : "Activate Class?"}
+        message={statusCandidate?.isActive 
+            ? "This will hide the class from the schedule. Are you sure?" 
+            : "This will make the class visible in the schedule again. Are you sure?"}
+        confirmLabel={statusCandidate?.isActive ? "Deactivate" : "Activate"}
+        cancelLabel="Cancel"
+        variant={statusCandidate?.isActive ? "danger" : "success"}
+      />
+
       <ConfirmationModal
         isOpen={isSuccessOpen}
         onClose={() => setIsSuccessOpen(false)}
         onConfirm={() => setIsSuccessOpen(false)}
         title="Success"
-        message={editingClass 
-            ? "Class updated successfully!" 
-            : "Class added successfully!"}
+        message={successMessage} 
         confirmLabel="OK"
         cancelLabel="Close"
         variant="success"

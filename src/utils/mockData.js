@@ -5,6 +5,23 @@ import {
   CreditCard 
 } from 'lucide-react';
 
+
+export const MOCK_INSTITUTES = [
+  { id: 'inst1', name: 'Sasip Institute - Nugegoda' },
+  { id: 'inst2', name: 'Rotary International' },
+  { id: 'inst3', name: 'Sakya Institute' },
+  { id: 'inst4', name: 'Sipwin - Kurunegala' }
+];
+
+export const MOCK_SUBJECTS = [
+  "Mathematics", "Science", "Sinhala", "English", "History", "Buddhism",
+  "Geography", "Civic Education", "ICT", "Health Science",
+  "Commerce", "Art", "Music", "Dancing", "Tamil Language",
+  "Combined Mathematics", "Physics", "Chemistry", "Biology", "Agricultural Science",
+  "Economics", "Business Studies", "Accounting", "Political Science", "Logic",
+  "Media Studies", "English Literature"
+];
+
 export const MOCK_USER = {
   name: "Vinod Warnakulasooriya",
   role: "Tutor",
