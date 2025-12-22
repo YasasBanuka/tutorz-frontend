@@ -3,43 +3,21 @@ import {
     User, Mail, Phone, Building2, CreditCard, 
     FileText, BadgeCheck, Loader, AlertCircle, RefreshCcw 
 } from 'lucide-react';
-import useAuth from '../../hooks/useAuth';
-import axios from 'axios';
-
-// Define the API URL constant to avoid typos
-const API_URL = 'https://localhost:7010/api/tutor/profile';
+import { getTutorProfile } from '../../services/api/tutorService'; // Importing from service
 
 const TutorProfile = () => {
-    const { user } = useAuth(); // Assuming user object contains { token, ... }
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Wrap fetch in useCallback so we can call it from useEffect OR the retry button
     const fetchProfile = useCallback(async () => {
-        // 1. Retrieve the token directly from localStorage
-        const token = localStorage.getItem('token');
-
-        // 2. Safety Check: Stop if there is no token
-        if (!token) {
-            setError('No authentication token found. Please log in.');
-            setLoading(false);
-            return;
-        }
-
         setLoading(true);
         setError('');
 
         try {
-            // 3. Make the request using the token variable we just grabbed
-            const response = await axios.get('https://localhost:7010/api/tutor/profile', {
-                headers: { 
-                    'Authorization': `Bearer ${token}`, // <--- UPDATED HERE
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            setProfile(response.data);
+            // Clean service call
+            const data = await getTutorProfile();
+            setProfile(data);
         } catch (err) {
             console.error("Profile fetch error:", err);
             if (err.response && err.response.status === 401) {
@@ -52,12 +30,9 @@ const TutorProfile = () => {
         }
     }, []);
 
-    // Initial Fetch
     useEffect(() => {
         fetchProfile();
     }, [fetchProfile]);
-
-    // --- RENDER STATES ---
 
     if (loading) return (
         <div className="flex flex-col justify-center items-center h-96 space-y-4">
@@ -82,25 +57,21 @@ const TutorProfile = () => {
         </div>
     );
 
-    // --- MAIN UI ---
-
     return (
         <div className="w-full max-w-5xl mx-auto p-4 md:p-6 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                
-                {/* 1. Header Section with Gradient */}
+                {/* Header */}
                 <div className="h-32 bg-gradient-to-r from-blue-600 to-blue-800 relative">
                     <div className="absolute -bottom-10 left-8">
                         <div className="w-24 h-24 rounded-2xl bg-white p-1.5 shadow-lg rotate-3">
                             <div className="w-full h-full rounded-xl bg-blue-50 flex items-center justify-center text-3xl font-bold text-blue-700 uppercase">
-                                {/* Safe access for initials */}
                                 {profile?.firstName?.[0] || <User />}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. Basic Info Header */}
+                {/* Name & ID */}
                 <div className="pt-14 px-8 pb-6 border-b border-gray-100">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -119,30 +90,15 @@ const TutorProfile = () => {
                     </div>
                 </div>
 
-                {/* 3. Details Grid */}
+                {/* Details Grid */}
                 <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
-                    {/* Left Column: Personal & Contact */}
+                    {/* Personal */}
                     <div className="space-y-6">
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
                             Personal Details
                         </h3>
-
-                        {/* Email */}
-                        <InfoCard 
-                            icon={Mail} 
-                            label="Email Address" 
-                            value={profile?.email} 
-                        />
-
-                        {/* Phone */}
-                        <InfoCard 
-                            icon={Phone} 
-                            label="Phone Number" 
-                            value={profile?.phoneNumber || "Not provided"} 
-                        />
-
-                        {/* Bio */}
+                        <InfoCard icon={Mail} label="Email Address" value={profile?.email} />
+                        <InfoCard icon={Phone} label="Phone Number" value={profile?.phoneNumber || "Not provided"} />
                         <div className="group flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors duration-200">
                             <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600">
                                 <FileText size={20} />
@@ -156,40 +112,31 @@ const TutorProfile = () => {
                         </div>
                     </div>
 
-                    {/* Right Column: Financial Information */}
+                    {/* Financial */}
                     <div className="space-y-6">
                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
                             Financial Information
                         </h3>
-
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden transition-transform hover:scale-[1.01] duration-300">
-                            {/* Decorative background effects */}
                             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-5 rounded-full blur-2xl"></div>
                             <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-blue-500 opacity-10 rounded-full blur-xl"></div>
-
                             <div className="flex items-center justify-between mb-8">
                                 <CreditCard size={24} className="text-blue-400" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider bg-white/10 px-2 py-1 rounded backdrop-blur-sm border border-white/5">
                                     Banking Details
                                 </span>
                             </div>
-
                             <div className="space-y-5 relative z-10">
                                 <div>
                                     <p className="text-xs text-gray-400 mb-1">Bank Name</p>
                                     <div className="flex items-center gap-2">
                                         <Building2 size={16} className="text-gray-400" />
-                                        <p className="font-semibold text-lg tracking-wide">
-                                            {profile?.bankName || "N/A"}
-                                        </p>
+                                        <p className="font-semibold text-lg tracking-wide">{profile?.bankName || "N/A"}</p>
                                     </div>
                                 </div>
-
                                 <div>
                                     <p className="text-xs text-gray-400 mb-1">Account Number</p>
-                                    <p className="font-mono text-xl tracking-widest text-blue-50">
-                                        {profile?.bankAccountNumber || "•••• •••• ••••"}
-                                    </p>
+                                    <p className="font-mono text-xl tracking-widest text-blue-50">{profile?.bankAccountNumber || "•••• •••• ••••"}</p>
                                 </div>
                             </div>
                         </div>
@@ -200,7 +147,7 @@ const TutorProfile = () => {
     );
 };
 
-// Helper component to reduce repetition
+// Helper component for uniform card style
 const InfoCard = ({ icon: Icon, label, value }) => (
     <div className="group flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors duration-200">
         <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600">

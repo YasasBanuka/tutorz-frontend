@@ -24,3 +24,8 @@ export const deleteClass = async (id) => {
   const response = await apiClient.delete(`/tutor/classes/${id}`);
   return response.data;
 };
+
+export const getTutorProfile = async () => {
+  const response = await apiClient.get('/tutor/profile');
+  return response.data;
+};
