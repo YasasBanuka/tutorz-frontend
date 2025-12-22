@@ -122,3 +122,16 @@ export const resetPassword = async (token, newPassword) => {
     }
 };
 
+/**
+ * Registers a new student under an existing parent account.
+ * @param {object} siblingData - { identifier, firstName, lastName, grade, ... }
+ */
+export const registerSibling = async (siblingData) => {
+    try {
+        // Matches Backend: [HttpPost("register-sibling")]
+        const response = await apiClient.post('/auth/register-sibling', siblingData);
+        return response.data;
+    } catch (err) {
+        throw new Error(err.response?.data?.message || 'Sibling registration failed.');
+    }
+};

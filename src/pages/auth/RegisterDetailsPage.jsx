@@ -58,7 +58,11 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
 const RegisterDetailsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { register: manualRegister } = useAuth(); 
+    
+    // Destructure specifically to get registerSibling
+    const auth = useAuth(); 
+    const manualRegister = auth.register;
+    const registerSibling = auth.registerSibling;
     
     const stepOneData = location.state?.stepOneData;
     const socialProfile = location.state?.socialProfile;
@@ -75,7 +79,8 @@ const RegisterDetailsPage = () => {
     const isSocial = stepOneData.isSocial === true;
 
     const [formData, setFormData] = useState({
-        phoneNumber: isLinkedAccount ? linkedPhoneNumber : '',
+        // Ensure linkedPhoneNumber is set as initial state if present
+        phoneNumber: isLinkedAccount ? linkedPhoneNumber : (stepOneData.phoneNumber || ''), 
         firstName: socialProfile?.firstName || '',
         lastName: socialProfile?.lastName || '',
         bio: '',
@@ -100,25 +105,53 @@ const RegisterDetailsPage = () => {
     };
 
     const handlePhoneBlur = () => {
-        const validation = validatePhoneNumber(formData.phoneNumber);
-        if (!validation.isValid) setErrors(prev => ({ ...prev, phoneNumber: validation.message }));
+        // Don't validate on blur if it's disabled/linked
+        if (!isLinkedAccount) {
+            const validation = validatePhoneNumber(formData.phoneNumber);
+            if (!validation.isValid) setErrors(prev => ({ ...prev, phoneNumber: validation.message }));
+        }
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setGlobalError(null);
 
-        const phoneValidation = validatePhoneNumber(formData.phoneNumber);
-        if (!phoneValidation.isValid) {
-            setErrors(prev => ({ ...prev, phoneNumber: phoneValidation.message }));
-            return;
+        // Skip phone validation if it is a Linked Account or Social Login
+        if (!isLinkedAccount && !isSocial) {
+            const phoneValidation = validatePhoneNumber(formData.phoneNumber);
+            if (!phoneValidation.isValid) {
+                setErrors(prev => ({ ...prev, phoneNumber: phoneValidation.message }));
+                return;
+            }
         }
 
         setIsSubmitting(true);
         const cleanDateOfBirth = formData.dateOfBirth === '' ? null : formData.dateOfBirth;
 
         try {
-            if (isSocial) {
+            // --- SIBLING REGISTRATION ---
+            if (isLinkedAccount) {
+                const siblingPayload = {
+                    identifier: linkedPhoneNumber, 
+                    verificationToken: "VERIFIED",
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    schoolName: formData.school,
+                    grade: formData.grade,
+                    parentName: formData.parentName,
+                    dateOfBirth: cleanDateOfBirth || new Date().toISOString()
+                };
+
+                const result = await registerSibling(siblingPayload);
+                
+                if (result.success) {
+                    navigate('/dashboard');
+                } else {
+                    setGlobalError(result.error?.message || "Sibling registration failed.");
+                }
+            }
+            // --- SOCIAL LOGIN ---
+            else if (isSocial) {
                 const payload = {
                     provider: stepOneData.provider,
                     idToken: socialProfile.idToken,
@@ -138,7 +171,9 @@ const RegisterDetailsPage = () => {
                 };
                 await socialLogin(payload);
                 navigate('/dashboard'); 
-            } else {
+            } 
+            // --- MANUAL REGISTRATION ---
+            else {
                 const fullRegistrationData = {
                     ...stepOneData,
                     ...formData,
@@ -154,11 +189,12 @@ const RegisterDetailsPage = () => {
                 if (result.success) {
                     navigate('/dashboard');
                 } else {
-                    setGlobalError(extractErrorMessage(result.error));
+                    // Safe error extraction
+                    setGlobalError(result.error?.message || "Registration failed.");
                 }
             }
         } catch (error) {
-             setGlobalError(isSocial ? error.message : "Registration failed.");
+            setGlobalError(isSocial ? error.message : "Registration failed.");
         } finally {
             setIsSubmitting(false);
         }
@@ -224,8 +260,6 @@ const RegisterDetailsPage = () => {
                         onChange={handleChange}
                         onBlur={handlePhoneBlur}
                         error={errors.phoneNumber}
-                        // FIXED: Removed className prop. 
-                        // The 'disabled' prop will automatically gray it out in the browser.
                         disabled={isLinkedAccount} 
                     />
                     
