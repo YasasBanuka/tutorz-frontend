@@ -8,34 +8,81 @@ import { extractErrorMessage } from '../../utils/helpers';
 import useAuth from '../../hooks/useAuth';
 import { socialLogin } from '../../services/auth/authService.js'; 
 import Label from '../../components/atoms/Label.jsx'; 
-import Select from '../../components/atoms/Select.jsx';
 
+const GRADE_GROUPS = [
+    { label: "Primary Education", options: ['Preschool','Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'] },
+    { label: "Secondary Education", options: ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11 (O/L)','Grade 12 (A/L)', 'Grade 13 (A/L)'] },
+    { label: "Other", options: ['Course', 'Seminar', 'Workshop'] }
+];
+
+const SelectField = ({ id, label, value, onChange, groups, placeholder, required = false, error }) => {
+    const isPlaceholder = value === "";
+    return (
+        <div className="w-full">
+            <Label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+                {label} {required && <span className="text-red-500">*</span>}
+            </Label>
+            <div className="relative">
+                <select
+                    id={id}
+                    value={value}
+                    onChange={onChange}
+                    required={required}
+                    className={`appearance-none w-full px-4 py-3 rounded-lg border bg-white
+                        text-sm font-medium transition-all duration-200 ease-in-out
+                        focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 focus:border-blue-500
+                        ${error ? 'border-red-300 focus:ring-red-200 focus:border-red-500' : 'border-gray-300'}
+                        ${isPlaceholder ? 'text-gray-400' : 'text-gray-900'}
+                    `}
+                >
+                    <option value="" disabled>{placeholder}</option>
+                    {groups.map((group, index) => (
+                        <optgroup key={index} label={group.label} className="font-semibold text-gray-700">
+                            {group.options.map((opt) => (
+                                <option key={opt} value={opt} className="text-gray-900 font-normal">{opt}</option>
+                            ))}
+                        </optgroup>
+                    ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+        </div>
+    );
+};
 
 const RegisterDetailsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { register: manualRegister, login: reduxLogin } = useAuth(); 
     
-    // Check both standard data and social data
+    // Destructure specifically to get registerSibling
+    const auth = useAuth(); 
+    const manualRegister = auth.register;
+    const registerSibling = auth.registerSibling;
+    
     const stepOneData = location.state?.stepOneData;
     const socialProfile = location.state?.socialProfile;
+    
+    // Check flags
+    const isLinkedAccount = stepOneData?.isLinkedAccount === true;
+    const linkedPhoneNumber = stepOneData?.linkedPhoneNumber || '';
 
     useEffect(() => {
-        if (!stepOneData) {
-            navigate('/register');
-        }
+        if (!stepOneData) navigate('/register');
     }, [stepOneData, navigate]);
 
     if (!stepOneData) return null;
-
-    // Determine if this is a social flow
     const isSocial = stepOneData.isSocial === true;
 
-    // State
     const [formData, setFormData] = useState({
-        phoneNumber: '',
-        firstName: socialProfile?.firstName || '', // Pre-fill from Google
-        lastName: socialProfile?.lastName || '',   // Pre-fill from Google
+        // Ensure linkedPhoneNumber is set as initial state if present
+        phoneNumber: isLinkedAccount ? linkedPhoneNumber : (stepOneData.phoneNumber || ''), 
+        firstName: socialProfile?.firstName || '',
+        lastName: socialProfile?.lastName || '',
         bio: '',
         bankAccount: '',
         bankName: '',
@@ -51,89 +98,17 @@ const RegisterDetailsPage = () => {
     const [globalError, setGlobalError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-
-  // REPLACE const GRADE_OPTIONS = [...] WITH THIS:
-
-const GRADE_GROUPS = [
-    {
-        label: "Primary Education",
-        options: ['Preschool','Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5']
-    },
-    {
-        label: "Secondary Education",
-        options: ['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11 (O/L)','Grade 12 (A/L)', 'Grade 13 (A/L)']
-    },
-    {
-        label: "Other",
-        options: ['Course', 'Seminar', 'Workshop']
-    }
-];
-
-// REPLACE THE SelectField COMPONENT DEFINITION WITH THIS:
-
-const SelectField = ({ id, label, value, onChange, groups, placeholder, required = false, error }) => {
-    // Logic to make placeholder text look gray and selected text look black
-    const isPlaceholder = value === "";
-
-    return (
-        <div className="w-full">
-            <Label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
-                {label} {required && <span className="text-red-500">*</span>}
-            </Label>
-            
-            <div className="relative">
-                <select
-                    id={id}
-                    value={value}
-                    onChange={onChange}
-                    required={required}
-                    className={`
-                        appearance-none w-full px-4 py-3 rounded-lg border bg-white
-                        text-sm font-medium transition-all duration-200 ease-in-out
-                        focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-200 focus:border-blue-500
-                        ${error ? 'border-red-300 focus:ring-red-200 focus:border-red-500' : 'border-gray-300'}
-                        ${isPlaceholder ? 'text-gray-400' : 'text-gray-900'}
-                    `}
-                >
-                    <option value="" disabled>{placeholder}</option>
-                    
-                    {/* Render groups instead of a flat list */}
-                    {groups.map((group, index) => (
-                        <optgroup key={index} label={group.label} className="font-semibold text-gray-700">
-                            {group.options.map((opt) => (
-                                <option key={opt} value={opt} className="text-gray-900 font-normal">
-                                    {opt}
-                                </option>
-                            ))}
-                        </optgroup>
-                    ))}
-                </select>
-
-                {/* Custom Arrow Icon */}
-                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </div>
-
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-        </div>
-    );
-};
-
     const handleChange = (e) => {
         const { id, value } = e.target;
         setFormData(prev => ({ ...prev, [id]: value }));
-        if (errors[id]) {
-            setErrors(prev => ({ ...prev, [id]: null }));
-        }
+        if (errors[id]) setErrors(prev => ({ ...prev, [id]: null }));
     };
 
     const handlePhoneBlur = () => {
-        const validation = validatePhoneNumber(formData.phoneNumber);
-        if (!validation.isValid) {
-            setErrors(prev => ({ ...prev, phoneNumber: validation.message }));
+        // Don't validate on blur if it's disabled/linked
+        if (!isLinkedAccount) {
+            const validation = validatePhoneNumber(formData.phoneNumber);
+            if (!validation.isValid) setErrors(prev => ({ ...prev, phoneNumber: validation.message }));
         }
     };
 
@@ -141,23 +116,46 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
         event.preventDefault();
         setGlobalError(null);
 
-        const phoneValidation = validatePhoneNumber(formData.phoneNumber);
-        if (!phoneValidation.isValid) {
-            setErrors(prev => ({ ...prev, phoneNumber: phoneValidation.message }));
-            return;
+        // Skip phone validation if it is a Linked Account or Social Login
+        if (!isLinkedAccount && !isSocial) {
+            const phoneValidation = validatePhoneNumber(formData.phoneNumber);
+            if (!phoneValidation.isValid) {
+                setErrors(prev => ({ ...prev, phoneNumber: phoneValidation.message }));
+                return;
+            }
         }
 
         setIsSubmitting(true);
         const cleanDateOfBirth = formData.dateOfBirth === '' ? null : formData.dateOfBirth;
 
         try {
-            if (isSocial) {
-                // SOCIAL REGISTER FLOW 
+            // --- SIBLING REGISTRATION ---
+            if (isLinkedAccount) {
+                const siblingPayload = {
+                    identifier: linkedPhoneNumber, 
+                    verificationToken: "VERIFIED",
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    schoolName: formData.school,
+                    grade: formData.grade,
+                    parentName: formData.parentName,
+                    dateOfBirth: cleanDateOfBirth || new Date().toISOString()
+                };
+
+                const result = await registerSibling(siblingPayload);
+                
+                if (result.success) {
+                    navigate('/dashboard');
+                } else {
+                    setGlobalError(result.error?.message || "Sibling registration failed.");
+                }
+            }
+            // --- SOCIAL LOGIN ---
+            else if (isSocial) {
                 const payload = {
-                    provider: stepOneData.provider, // "Google"
-                    idToken: socialProfile.idToken, // The token from Google
+                    provider: stepOneData.provider,
+                    idToken: socialProfile.idToken,
                     role: stepOneData.role,
-                    // Extra Profile Data
                     phoneNumber: formData.phoneNumber,
                     firstName: formData.firstName,
                     lastName: formData.lastName,
@@ -171,12 +169,11 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
                     instituteName: formData.instituteName,
                     address: formData.address
                 };
-
-                // Call the updated Social Login Endpoint
-                const response = await socialLogin(payload);
+                await socialLogin(payload);
                 navigate('/dashboard'); 
-            } else {
-                // MANUAL REGISTER FLOW
+            } 
+            // --- MANUAL REGISTRATION ---
+            else {
                 const fullRegistrationData = {
                     ...stepOneData,
                     ...formData,
@@ -192,11 +189,12 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
                 if (result.success) {
                     navigate('/dashboard');
                 } else {
-                    setGlobalError(extractErrorMessage(result.error));
+                    // Safe error extraction
+                    setGlobalError(result.error?.message || "Registration failed.");
                 }
             }
         } catch (error) {
-             setGlobalError(isSocial ? error.message : "Registration failed.");
+            setGlobalError(isSocial ? error.message : "Registration failed.");
         } finally {
             setIsSubmitting(false);
         }
@@ -217,24 +215,22 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
             case ROLES.STUDENT:
                 return (
                 <>
-            <FormField id="firstName" label="First Name" value={formData.firstName} onChange={handleChange} required />
-            <FormField id="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} required />
-            <FormField id="school" label="School Name" value={formData.school} onChange={handleChange} />
-       
-           <SelectField 
-                id="grade"
-                label="Grade / Course ..."
-                value={formData.grade}
-                onChange={handleChange}
-                groups={GRADE_GROUPS}      
-                placeholder="Select Grade"         
-                error={errors.grade}       
-            />
-
-            <FormField id="parentName" label="Parent Name" value={formData.parentName} onChange={handleChange} />
-            <FormField id="dateOfBirth" label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={handleChange} />
-        </>
-    );
+                    <FormField id="firstName" label="First Name" value={formData.firstName} onChange={handleChange} required />
+                    <FormField id="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} required />
+                    <FormField id="school" label="School Name" value={formData.school} onChange={handleChange} />
+                    <SelectField 
+                        id="grade"
+                        label="Grade / Course ..."
+                        value={formData.grade}
+                        onChange={handleChange}
+                        groups={GRADE_GROUPS}      
+                        placeholder="Select Grade"         
+                        error={errors.grade}       
+                    />
+                    <FormField id="parentName" label="Parent Name" value={formData.parentName} onChange={handleChange} />
+                    <FormField id="dateOfBirth" label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={handleChange} />
+                </>
+            );
             case ROLES.INSTITUTE:
                 return (
                     <>
@@ -264,12 +260,16 @@ const SelectField = ({ id, label, value, onChange, groups, placeholder, required
                         onChange={handleChange}
                         onBlur={handlePhoneBlur}
                         error={errors.phoneNumber}
+                        disabled={isLinkedAccount} 
                     />
+                    
+                    {isLinkedAccount && (
+                        <p className="text-xs text-blue-600 -mt-3 mb-2">* Linked to parent account</p>
+                    )}
+
                     {renderRoleFields()}
                     
-                    {globalError && (
-                        <p className="text-xs text-red-500 mt-1 text-center">{globalError}</p>
-                    )}
+                    {globalError && <p className="text-xs text-red-500 mt-1 text-center">{globalError}</p>}
 
                     <button
                         type="submit"
