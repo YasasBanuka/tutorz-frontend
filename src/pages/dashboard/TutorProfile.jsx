@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { getTutorProfile } from '../../services/api/tutorService'; // Importing from service
 
+import InfoCard from '../../components/molecules/InfoCard';
+
 const TutorProfile = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -147,17 +149,5 @@ const TutorProfile = () => {
     );
 };
 
-// Helper component for uniform card style
-const InfoCard = ({ icon: Icon, label, value }) => (
-    <div className="group flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors duration-200">
-        <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600">
-            <Icon size={20} />
-        </div>
-        <div>
-            <p className="text-xs text-gray-500 font-medium mb-0.5">{label}</p>
-            <p className="text-sm font-semibold text-gray-900">{value}</p>
-        </div>
-    </div>
-);
 
 export default TutorProfile;
