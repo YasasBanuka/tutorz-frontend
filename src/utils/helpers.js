@@ -26,3 +26,12 @@ export const formatCurrency = (amount) => {
     currency: 'LKR',
   }).format(amount);
 };
+
+/**
+ * Shows a confirmation dialog and returns user's choice
+ * @param {string} message - The confirmation message to display
+ * @returns {boolean} - true if user clicks OK, false if Cancel
+ */
+export const confirmAction = (message = "Are you sure you want to proceed?") => {
+  return window.confirm(message);
+};
