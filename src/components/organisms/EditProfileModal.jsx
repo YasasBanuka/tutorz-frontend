@@ -9,6 +9,8 @@ import Label from '../atoms/Label'; // Using your existing Label atom
 import Modal from '../molecules/Modal';
 import FormField from '../molecules/FormField'; // Your existing molecule
 import TextAreaField from '../molecules/TextAreaField'; // The one we just made
+import ConfirmationModal from '../molecules/ConfirmationModal';
+
 
 const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) => {
     const [formData, setFormData] = useState({
@@ -23,6 +25,7 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
 
     const [previewImage, setPreviewImage] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     // Sync state if initialData updates
     useEffect(() => {
@@ -44,27 +47,33 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSaveClick = (e) => {
         e.preventDefault();
-        
+        setShowConfirmModal(true); //Show confirmation modal
+    }
+
+    const handleConfirmedSave = (e) => {
+        e.preventDefault();
+
         // Convert to FormData for file upload
         const submitData = new FormData();
         Object.keys(formData).forEach(key => {
             // handle null values gracefully
             submitData.append(key, formData[key] || '');
         });
-        
+
         if (selectedFile) {
             submitData.append('profilePicture', selectedFile);
         }
 
         onSave(submitData);
+        setShowConfirmModal(false); //Close modal after saving
     };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Edit Profile">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                
+            <form onSubmit={handleSaveClick} className="space-y-6">
+
                 {/* 1. Profile Picture Upload Section */}
                 <div className="flex flex-col items-center gap-2">
                     <div className="relative group cursor-pointer w-24 h-24">
@@ -77,17 +86,17 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
                                 </div>
                             )}
                         </div>
-                        
+
                         {/* Overlay */}
                         <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Upload className="text-white" size={20} />
                         </div>
-                        
+
                         {/* Hidden File Input */}
-                        <input 
+                        <input
                             id="profilePicture"
-                            type="file" 
-                            accept="image/*" 
+                            type="file"
+                            accept="image/*"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             onChange={handleImageChange}
                         />
@@ -100,44 +109,44 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
                 {/* 2. Personal Info */}
                 <div className="space-y-4">
                     <h3 className="text-sm font-bold text-gray-900 border-b pb-2">Personal Information</h3>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField 
-                            id="firstName" 
-                            label="First Name" 
-                            value={formData.firstName} 
-                            onChange={handleChange} 
+                        <FormField
+                            id="firstName"
+                            label="First Name"
+                            value={formData.firstName}
+                            onChange={handleChange}
                         />
-                        <FormField 
-                            id="lastName" 
-                            label="Last Name" 
-                            value={formData.lastName} 
-                            onChange={handleChange} 
-                        />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField 
-                            id="email" 
-                            label="Email" 
-                            value={formData.email} 
-                            disabled 
-                            className="bg-gray-50 text-gray-500 cursor-not-allowed" // styling for disabled
-                        />
-                        <FormField 
-                            id="phoneNumber" 
-                            label="Phone Number" 
-                            value={formData.phoneNumber} 
-                            onChange={handleChange} 
+                        <FormField
+                            id="lastName"
+                            label="Last Name"
+                            value={formData.lastName}
+                            onChange={handleChange}
                         />
                     </div>
 
-                    <TextAreaField 
-                        id="bio" 
-                        label="Biography" 
-                        value={formData.bio} 
-                        onChange={handleChange} 
-                        placeholder="Tell students about yourself..." 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            id="email"
+                            label="Email"
+                            value={formData.email}
+                            disabled
+                            className="bg-gray-50 text-gray-500 cursor-not-allowed" // styling for disabled
+                        />
+                        <FormField
+                            id="phoneNumber"
+                            label="Phone Number"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <TextAreaField
+                        id="bio"
+                        label="Biography"
+                        value={formData.bio}
+                        onChange={handleChange}
+                        placeholder="Tell students about yourself..."
                     />
                 </div>
 
@@ -145,18 +154,18 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
                 <div className="space-y-4">
                     <h3 className="text-sm font-bold text-gray-900 border-b pb-2">Financial Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField 
-                            id="bankName" 
-                            label="Bank Name" 
-                            value={formData.bankName} 
-                            onChange={handleChange} 
-                            placeholder="e.g. Bank of Ceylon" 
+                        <FormField
+                            id="bankName"
+                            label="Bank Name"
+                            value={formData.bankName}
+                            onChange={handleChange}
+                            placeholder="e.g. Bank of Ceylon"
                         />
-                        <FormField 
-                            id="bankAccountNumber" 
-                            label="Account Number" 
-                            value={formData.bankAccountNumber} 
-                            onChange={handleChange} 
+                        <FormField
+                            id="bankAccountNumber"
+                            label="Account Number"
+                            value={formData.bankAccountNumber}
+                            onChange={handleChange}
                         />
                     </div>
                 </div>
@@ -167,11 +176,24 @@ const EditProfileModal = ({ isOpen, onClose, initialData, onSave, isSaving }) =>
                         Cancel
                     </Button>
                     <Button type="submit" variant="primary" disabled={isSaving}>
-                        {isSaving ? <Loader size={18} className="animate-spin mr-2"/> : <Save size={18} className="mr-2"/>}
+                        {isSaving ? <Loader size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
                         Save Changes
                     </Button>
                 </div>
             </form>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={handleConfirmedSave}
+                title="Save Changes!"
+                message="Are you sure you want to update your profile information?"
+                confirmLabel="Yes, Save"
+                cancelLabel="No"
+                variant="primary"
+            />
+
         </Modal>
     );
 };
